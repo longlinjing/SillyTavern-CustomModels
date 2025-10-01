@@ -43,79 +43,36 @@ for (const [provider, models] of Object.entries(settings.provider)) {
         btn.classList.add('menu_button');
         btn.classList.add('fa-solid', 'fa-fw', 'fa-pen-to-square');
         btn.title = 'Edit custom models';
-btn.addEventListener('click', async()=>{
-            const dom = document.createElement('div');
-            const modelList = document.createElement('div');
-            modelList.id = 'stcm--model-list';
-
-            const renderModels = () => {
-                modelList.innerHTML = '';
-                models.forEach(model => {
-                    const item = document.createElement('div');
-                    item.classList.add('stcm--model-item');
-                    const name = document.createElement('span');
-                    name.textContent = model;
-                    const delBtn = document.createElement('div');
-                    delBtn.classList.add('stcm--delete-btn', 'fa-solid', 'fa-trash', 'fa-fw');
-                    delBtn.title = 'Delete model';
-                    delBtn.addEventListener('click', () => {
-                        const index = models.indexOf(model);
-                        if (index > -1) {
-                            models.splice(index, 1);
-                        }
-                        renderModels(); // Re-render the list
-                    });
-                    item.append(name, delBtn);
-                    modelList.append(item);
-                });
-            };
-
-            const header = document.createElement('h3');
-            header.textContent = `Custom Models: ${provider}`;
-            dom.append(header);
-
-            renderModels();
-            dom.append(modelList);
-
-            const addContainer = document.createElement('div');
-            addContainer.classList.add('stcm--add-container');
-            const inp = document.createElement('input');
-            inp.type = 'text';
-            inp.classList.add('text_pole');
-            inp.placeholder = 'Add new model...';
-            const addBtn = document.createElement('div');
-            addBtn.classList.add('stcm--add-btn', 'menu_button');
-            addBtn.textContent = 'Add';
-            addBtn.addEventListener('click', () => {
-                const newModel = inp.value.trim();
-                if (newModel && !models.includes(newModel)) {
-                    models.push(newModel);
-                    renderModels(); // Re-render
-                    inp.value = '';
+        btn.addEventListener('click', async()=>{
+            let inp;
+            const dom = document.createElement('div'); {
+                const header = document.createElement('h3'); {
+                    header.textContent = `Custom Models: ${provider}`;
+                    dom.append(header);
                 }
-            });
-            inp.addEventListener('keydown', (evt) => {
-                if (evt.key === 'Enter') {
-                    addBtn.click();
+                const hint = document.createElement('small'); {
+                    hint.textContent = 'one model name per line';
+                    dom.append(hint);
                 }
-            });
-            addContainer.append(inp, addBtn);
-            dom.append(addContainer);
-
+                inp = document.createElement('textarea'); {
+                    inp.classList.add('text_pole');
+                    inp.rows = 20;
+                    inp.value = models.join('\n');
+                    dom.append(inp);
+                }
+            }
             const prom = popupCaller(dom, popupType.TEXT, null, { okButton: 'Save' });
             const result = await prom;
             if (result == popupResult.AFFIRMATIVE) {
-                // The 'models' array is already updated by the add/delete actions
+                while (models.pop());
+                models.push(...inp.value.split('\n').filter(it=>it.length));
                 extension_settings.customModels = settings;
                 saveSettingsDebounced();
                 populateOptGroup();
                 if (settings[`${provider}_model`] && models.includes(settings[`${provider}_model`])) {
                     sel.value = settings[`${provider}_model`];
-                } else if (!models.includes(sel.value)) {
-                    // If the currently selected model was deleted, reset to default
-                    sel.selectedIndex = 0;
+                    sel.dispatchEvent(new Event('change', { bubbles:true }));
                 }
-                sel.dispatchEvent(new Event('change', { bubbles:true }));
             }
         });
         h4.append(btn);
