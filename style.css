@@ -1,4 +1,120 @@
 .stcm--btn {
-  display: inline-block;
-  margin-left: 1em;
+    display: inline-block;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+#stcm--model-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 10px 0;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.stcm--model-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    background-color: var(--background-color-secondary);
+    border-radius: 3px;
+}
+
+.stcm--delete-btn {
+    cursor: pointer;
+    color: var(--text-color-secondary);
+}
+.stcm--delete-btn:hover {
+    color: var(--text-color-error);
+}
+
+.stcm--add-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.stcm--add-container .text_pole {
+    flex-grow: 1;
+}
+
+.stcm--add-btn {
+    flex-shrink: 0;
+}
+
+/* API 轮询功能相关样式 */
+.stcm--refresh-btn {
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.stcm--refresh-btn:hover {
+    color: var(--SmartThemeBodyColor);
+}
+
+/* 旋转动画 */
+@keyframes spin {
+    from { 
+        transform: rotate(0deg); 
+    }
+    to { 
+        transform: rotate(360deg); 
+    }
+}
+
+/* API 调用计数显示样式 */
+.stcm--api-counter {
+    font-size: 0.8em;
+    color: var(--text-color-secondary);
+    margin-left: 10px;
+}
+
+/* 模型状态指示器 */
+.stcm--model-status {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 5px;
+}
+
+.stcm--model-status.loading {
+    background-color: var(--text-color-warning);
+    animation: pulse 1.5s ease-in-out infinite alternate;
+}
+
+.stcm--model-status.success {
+    background-color: var(--text-color-success);
+}
+
+.stcm--model-status.error {
+    background-color: var(--text-color-error);
+}
+
+@keyframes pulse {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.3;
+    }
+}
+
+/* 刷新按钮状态样式 */
+.stcm--refresh-btn.loading {
+    animation: spin 1s linear infinite;
+    color: var(--text-color-warning);
+}
+
+.stcm--refresh-btn.success {
+    color: var(--text-color-success);
+}
+
+.stcm--refresh-btn.error {
+    color: var(--text-color-error);
 }
