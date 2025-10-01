@@ -228,8 +228,10 @@ for (const [provider, models] of Object.entries(settings.provider)) {
             }
             const prom = popupCaller(dom, popupType.TEXT, null, { okButton: 'Save' });
             const result = await prom;
-            if (result == popupResult.AFFIRMATIVE) {
-                while (models.pop());
+            if (result === popupResult.AFFIRMATIVE) {
+                while (models.length > 0) {
+                    models.pop();
+                }
                 models.push(...inp.value.split('\n').filter(it=>it.length));
                 extension_settings.customModels = settings;
                 saveSettingsDebounced();
@@ -271,27 +273,17 @@ for (const [provider, models] of Object.entries(settings.provider)) {
     });
 }
 
-// 初始化 API 轮询功能
-(async function initApiPolling() {
-    console.log("初始化 CustomModels API 轮询功能...");
+// 初始化 API 轮询功能 - 延迟执行确保 DOM 已加载
+function initApiPolling() {
+    console.log("开始初始化 CustomModels API 轮询功能...");
     
+    // 初始化 API 调用计数器
     initApiCallCounter();
-    
-    try {
-        const secrets = await getSecrets();
-        if (secrets) {
-            await initGeminiModels(secrets);
-            console.log("API 轮询功能初始化完成");
-        } else {
-            console.log("无法获取密钥，API 轮询功能初始化失败");
-        }
-    } catch (error) {
-        console.error("API 轮询功能初始化出错:", error);
-    }
     
     // 为 Google 提供商添加刷新模型的按钮
     const googleSel = document.querySelector('#model_google_select');
     if (googleSel) {
+        console.log("找到 Google 模型选择器，添加刷新按钮...");
         const googleH4 = googleSel.parentElement.querySelector('h4');
         if (googleH4) {
             let refreshBtn = googleH4.querySelector('.stcm--refresh-btn');
@@ -299,7 +291,10 @@ for (const [provider, models] of Object.entries(settings.provider)) {
                 refreshBtn = document.createElement('div');
                 refreshBtn.classList.add('stcm--refresh-btn', 'stcm--btn', 'menu_button', 'fa-solid', 'fa-fw', 'fa-refresh');
                 refreshBtn.title = '刷新 Gemini 模型列表';
+                refreshBtn.style.marginLeft = '5px';
+                refreshBtn.style.cursor = 'pointer';
                 refreshBtn.addEventListener('click', async () => {
+                    console.log("点击刷新按钮...");
                     refreshBtn.classList.add('loading');
                     try {
                         const secrets = await getSecrets();
@@ -314,7 +309,35 @@ for (const [provider, models] of Object.entries(settings.provider)) {
                     }
                 });
                 googleH4.appendChild(refreshBtn);
+                console.log("刷新按钮已添加");
             }
         }
+    } else {
+        console.log("未找到 Google 模型选择器");
     }
-})();
+    
+    // 延迟执行模型初始化
+    setTimeout(async () => {
+        try {
+            console.log("开始获取密钥...");
+            const secrets = await getSecrets();
+            if (secrets) {
+                console.log("获取到密钥，开始初始化 Gemini 模型...");
+                await initGeminiModels(secrets);
+                console.log("API 轮询功能初始化完成");
+            } else {
+                console.log("无法获取密钥，API 轮询功能初始化失败");
+            }
+        } catch (error) {
+            console.error("API 轮询功能初始化出错:", error);
+        }
+    }, 1000); // 延迟 1 秒执行
+}
+
+// 确保在 DOM 加载完成后初始化
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApiPolling);
+} else {
+    // 如果 DOM 已经加载完成，立即执行
+    initApiPolling();
+}
